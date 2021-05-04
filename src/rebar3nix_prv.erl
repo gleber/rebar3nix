@@ -36,12 +36,17 @@ do(State) ->
 format_error(Reason) ->
   io_lib:format("~p", [Reason]).
 
-to_nix(Name, {pkg, PkgName, Vsn, _OldHash, Hash, _Repo}) ->
-  io_lib:format("  ~s = fetchHex {
+as_fetch_nix(Name, PkgName, Vsn, Hash) ->
+    io_lib:format("  ~s = fetchHex {
     pkg = \"~s\";
     version = \"~s\";
     sha256 = \"~s\";
-  };~n", [Name, PkgName, Vsn, Hash]);
+  };~n", [Name, PkgName, Vsn, Hash]).
+
+to_nix(Name, {pkg, PkgName, Vsn,  Hash, _Data}) ->
+    as_fetch_nix(Name, PkgName, Vsn, Hash);
+to_nix(Name, {pkg, PkgName, Vsn, _OldHash, Hash, _Repo}) ->
+    as_fetch_nix(Name, PkgName, Vsn, Hash);
 to_nix(Name, {git, Url, {ref, Ref}}) ->
   case string:prefix(string:lowercase(Url), "https://github.com") of
     nomatch ->
